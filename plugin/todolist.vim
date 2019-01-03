@@ -71,6 +71,7 @@ function! s:map()
   nnoremap <buffer> O :call <SID>createitem(0)<CR>
   nnoremap <buffer> o :call <SID>createitem(1)<CR>
   nnoremap <buffer> t :call <SID>toggle()<CR>
+  inoremap <buffer> <CR> <ESC>:call <SID>createitem(1)<CR>
 endfunction
 
 " Resets mappings
@@ -78,6 +79,7 @@ function! s:resetmap()
   nunmap <buffer> o
   nunmap <buffer> O
   nunmap <buffer> t
+  iunmap <buffer> i
 endfunction
 
 " Plugin startup code

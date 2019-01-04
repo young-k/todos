@@ -11,6 +11,7 @@ function! s:init()
   setlocal shiftwidth=2 expandtab
   setlocal cursorline
   setlocal noautoindent
+  setlocal nonumber
 endfunction
 
 function! s:newfile()
@@ -26,11 +27,9 @@ function! s:newfile()
 
     if day == 0
       let datestr = "Today"
-      let datequery = "date -v '+" . string(day) . "d' '+%b %d'"
       let datestr .= ' [' . system(datequery)[0:-2] . ']'
     elseif day == 1
       let datestr = "Tomorrow"
-      let datequery = "date -v '+" . string(day) . "d' '+%b %d'"
       let datestr .= ' [' . system(datequery)[0:-2] . ']'
     endif
 
@@ -76,10 +75,46 @@ endfunction
 
 " Resets mappings
 function! s:resetmap()
-  nunmap <buffer> o
-  nunmap <buffer> O
-  nunmap <buffer> t
-  iunmap <buffer> i
+  silent! nunmap <buffer> o
+  silent! nunmap <buffer> O
+  silent! nunmap <buffer> t
+  silent! iunmap <buffer> i
+endfunction
+
+function! s:savefile()
+  let alltodos = []
+  let todos = []
+  let currdate = 'Inbox'
+
+  for currline in getline(2, '$') " Skip Inbox
+    let date = matchstr(currline, '\D\{3}\s\D\{3}\s\d\{2}')
+
+    if date != '' " date str
+      " Add all todos before resetting data
+      call add(alltodos, currdate)
+      for t in todos
+        call add(alltodos, t)
+      endfor
+
+      let todos = []
+      let currdate = date
+    elseif matchstr(currline, '\S') != '' " non-white space string
+      if matchstr(currline, '●') != ''
+        let todostr = currline[8:]
+      else 
+        let todostr = currline[6:]
+      endif
+      call add(todos, todostr)
+    endif
+
+  endfor
+
+  call add(alltodos, currdate)
+  for t in todos
+    call add(alltodos, t)
+  endfor
+
+  call writefile(alltodos, '.todo')
 endfunction
 
 " Plugin startup code
@@ -92,6 +127,7 @@ if !exists('g:todolist')
     autocmd BufRead,BufNewFile *.todo call s:init()
     autocmd BufNewFile *.todo call s:newfile()
     autocmd BufRead,BufNewFile *.todo call s:map()
-    autocmd BufLeave *.todo call s:remap()
+    autocmd BufLeave *.todo call s:resetmap()
+    autocmd BufWrite *.todo call s:savefile()
   augroup end
 endif

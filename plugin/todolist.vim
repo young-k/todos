@@ -41,6 +41,59 @@ function! s:newfile()
   normal! gg
 endfunction
 
+function s:matchDate(str) 
+  return matchstr(a:str, '\D\{3}\s\D\{3}\s\d\{2}')
+endfunction
+
+function! s:loadfile()
+  if !filereadable(".todosave")
+    return
+  endif
+
+  normal! ggVGd
+  let loadedTodos = readfile('.todosave')
+
+  let day = 0
+  let loadedIndex = 1
+  let lst = []
+
+  let today = "date '+%a %b %d'"
+  let todaydatestr = system(today)[0:-2]
+
+  call add(lst, '* Inbox')
+  while loadedIndex < len(loadedTodos) && loadedTodos[loadedIndex] != todaydatestr
+    if s:matchDate(loadedTodos[loadedIndex]) == ''
+      call add(lst, '  [ ] ' . loadedTodos[loadedIndex])
+    endif
+    let loadedIndex += 1
+  endwhile
+  call add(lst, '')
+
+  while day < 7
+    let loadedIndex += 1 " move to one after date
+    let datequery = "date -v '+" . string(day) . "d' '+%a %b %d'"
+    let datestr = system(datequery)[0:-2]
+
+    if day == 0
+      let datestr = 'Today [' . system(datequery)[0:-2] . ']'
+    elseif day == 1
+      let datestr = 'Tomorrow [' . system(datequery)[0:-2] . ']'
+    endif
+
+    call add(lst, '* ' . datestr)
+
+    while loadedIndex < len(loadedTodos) && s:matchDate(loadedTodos[loadedIndex]) == ''
+      call add(lst, '  [ ] ' . loadedTodos[loadedIndex])
+      let loadedIndex += 1
+    endwhile
+
+    call add(lst, '')
+    let day += 1
+  endwhile
+  call append(0, lst)
+  normal! gg
+endfunction
+
 function! s:createitem(dir)
   if a:dir == 1
     normal! o  [ ] 
@@ -87,7 +140,7 @@ function! s:savefile()
   let currdate = 'Inbox'
 
   for currline in getline(2, '$') " Skip Inbox
-    let date = matchstr(currline, '\D\{3}\s\D\{3}\s\d\{2}')
+    let date = s:matchDate(currline)
 
     if date != '' " date str
       " Add all todos before resetting data
@@ -114,7 +167,7 @@ function! s:savefile()
     call add(alltodos, t)
   endfor
 
-  call writefile(alltodos, '.todo')
+  call writefile(alltodos, '.todosave')
 endfunction
 
 " Plugin startup code
@@ -127,6 +180,7 @@ if !exists('g:todolist')
     autocmd BufRead,BufNewFile *.todo call s:init()
     autocmd BufNewFile *.todo call s:newfile()
     autocmd BufRead,BufNewFile *.todo call s:map()
+    autocmd BufRead *.todo call s:loadfile()
     autocmd BufLeave *.todo call s:resetmap()
     autocmd BufWrite *.todo call s:savefile()
   augroup end

@@ -11,7 +11,14 @@ More features coming soon.
 
 ## Installation
 
-Coming soon.
+If you're using Pathogen, add this line to your `.vimrc`:
+
+```
+Plugin 'young-k/todos'
+```
+
+and run `:PluginInstall`.
+
 
 ## Usage
 

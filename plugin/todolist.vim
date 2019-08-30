@@ -141,39 +141,27 @@ function! s:resetmap()
 endfunction
 
 function! s:savefile()
-  let alltodos = []
-  let todos = []
-  let currdate = 'Inbox'
+  let tododata = []
+  call add(tododata, 'Inbox')
 
   for currline in getline(2, '$') " Skip Inbox
     let date = s:matchDate(currline)
 
     if date != '' " date str
-      " Add all todos before resetting data
-      call add(alltodos, currdate)
-      for t in todos
-        call add(alltodos, t)
-      endfor
+      call add(tododata, date)
 
-      let todos = []
-      let currdate = date
     elseif matchstr(currline, '\S') != '' " non-white space string
       if matchstr(currline, '●') != ''
         let todostr = currline[8:]
       else 
         let todostr = currline[6:]
       endif
-      call add(todos, todostr)
+
+      call add(tododata, todostr)
     endif
-
   endfor
 
-  call add(alltodos, currdate)
-  for t in todos
-    call add(alltodos, t)
-  endfor
-
-  call writefile(alltodos, '.todosave')
+  call writefile(tododata, '.todosave')
 endfunction
 
 " Plugin startup code

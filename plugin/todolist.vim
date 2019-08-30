@@ -14,10 +14,16 @@ function! s:init()
   setlocal nonumber
 endfunction
 
+" Initialize a new file
 function! s:newfile()
   let day = 0
   let lst = []
 
+  " Add Words section
+  call add(lst, '* Words')
+  call add(lst, '')
+
+  " Add Inbox section
   call add(lst, '* Inbox')
   call add(lst, '')
 

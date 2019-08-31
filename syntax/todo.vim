@@ -10,21 +10,20 @@ endif
 
 let b:current_syntax = "todo"
 
-" syn match name ".*$"
-syn keyword asterisk '*' 
+syntax match asterisk "*"
+syntax match header "*.*$" contains=asterisk
 
-syn match asterisk "*"
-syn match header "*.*$" contains=asterisk
+syntax match unchecked "\[ \]"
+syntax match checked "\[●\]"
 
-syn match unchecked "\[ \]"
-syn match checked "\[●\]"
-syn match recurring "(.*)"
+syntax match doublequote "\""
+syntax match subheader "\".*$" contains=doublequote
 
-hi def link asterisk       Statement
-hi def link header         Type
-hi def link unchecked      Unchecked
-hi def link unchecked      Checked
-hi def link recurring      Comment
+highlight def link asterisk       Statement
+highlight def link header         Type
 
-highlight Unchecked ctermfg=red
-highlight Checked   ctermfg=green
+highlight def link doublequote    Statement
+highlight def link subheader      Type
+
+highlight unchecked ctermfg=red
+highlight checked   ctermfg=green
